@@ -1,0 +1,25 @@
+# Core web framework
+fastapi>=0.104.1
+uvicorn[standard]>=0.24.0
+
+# HTTP client for Azure OpenAI
+httpx>=0.25.0
+aiohttp>=3.9.0
+
+# Data validation and serialization
+pydantic>=2.5.0
+
+# Configuration management
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+
+# Logging and monitoring
+structlog>=23.2.0
+
+# Development and testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.12.0
+
+# Optional: for enhanced async support
+asyncio-mqtt>=0.13.0 
