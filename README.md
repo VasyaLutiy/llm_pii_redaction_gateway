@@ -286,6 +286,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ ] Kubernetes deployment manifests
 - [ ] Advanced audit and compliance features
 
+## Changelog
+
+## [Unreleased]
+- Optimization: В chat_completions теперь всегда передаются только последние 20 сообщений истории. Если сообщений больше — история обрезается, и это событие логируется. Это снижает нагрузку на LLM, ускоряет ответы и предотвращает переполнение контекста.
+
 ---
 
 **Built with ❤️ for secure AI applications** 
