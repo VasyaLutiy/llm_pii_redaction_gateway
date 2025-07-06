@@ -33,7 +33,7 @@ else:
 pii_gateway = AsyncPIISecurityGateway()
 llm_service = LLMService(llm_provider, pii_gateway)
 
-MAX_MESSAGES = 20  # Лимит сообщений для LLM
+MAX_MESSAGES = 50  # Лимит сообщений для LLM
 
 def validate_chat_request(request: ChatRequest) -> None:
     """Валидация входящего запроса"""

@@ -1,3 +1,6 @@
+from llm_pii_proxy.observability import logger as obs_logger
+obs_logger.setup_logging()
+
 import logging
 import sys
 import os
@@ -5,7 +8,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from llm_pii_proxy.api.routes.chat import router as chat_router
 from llm_pii_proxy.api.routes.health import router as health_router
-from llm_pii_proxy.observability import logger as obs_logger
 
 def setup_logging():
     """Настройка логирования для PII Proxy"""
@@ -55,7 +57,6 @@ def setup_logging():
     logging.info("📝 Детальные логи записываются в: /tmp/llm_pii_proxy_debug.log")
 
 def create_app() -> FastAPI:
-    setup_logging()
     
     app = FastAPI(
         title="LLM PII Proxy", 
