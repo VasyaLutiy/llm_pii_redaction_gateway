@@ -1,6 +1,5 @@
 # api/routes/chat.py
 
-import logging
 import time
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
@@ -11,9 +10,10 @@ from llm_pii_proxy.core.exceptions import PIIProcessingError, LLMProviderError, 
 from llm_pii_proxy.services.llm_service import LLMService
 from llm_pii_proxy.providers.azure_provider import AzureOpenAIProvider
 from llm_pii_proxy.security.pii_gateway import AsyncPIISecurityGateway
+from llm_pii_proxy.observability import logger as obs_logger
 
 # Настраиваем логгер
-logger = logging.getLogger(__name__)
+logger = obs_logger.get_logger(__name__)
 
 router = APIRouter()
 

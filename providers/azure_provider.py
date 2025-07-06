@@ -1,7 +1,6 @@
 # providers/azure_provider.py - ПРОСТАЯ ВЕРСИЯ С ПОЛНЫМ СТРИМИНГОМ
 
 import asyncio
-import logging
 import os
 import time
 from typing import AsyncIterator
@@ -10,8 +9,9 @@ from llm_pii_proxy.core.models import ChatRequest, ChatResponse
 from llm_pii_proxy.core.interfaces import LLMProvider
 from llm_pii_proxy.core.exceptions import LLMProviderError
 from llm_pii_proxy.config.settings import settings
+from llm_pii_proxy.observability import logger as obs_logger
 
-logger = logging.getLogger(__name__)
+logger = obs_logger.get_logger(__name__)
 
 class AzureOpenAIProvider(LLMProvider):
     def __init__(self):

@@ -1,6 +1,5 @@
 # services/llm_service.py
 
-import logging
 import time
 import os
 import uuid
@@ -12,9 +11,10 @@ from llm_pii_proxy.security.pii_gateway import AsyncPIISecurityGateway
 from llm_pii_proxy.config.settings import settings, Settings
 import asyncio
 import re
+from llm_pii_proxy.observability import logger as obs_logger
 
 # Настраиваем логгер
-logger = logging.getLogger(__name__)
+logger = obs_logger.get_logger(__name__)
 
 class LLMService:
     def __init__(self, llm_provider: AzureOpenAIProvider, pii_gateway: AsyncPIISecurityGateway):

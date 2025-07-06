@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from llm_pii_proxy.api.routes.chat import router as chat_router
 from llm_pii_proxy.api.routes.health import router as health_router
+from llm_pii_proxy.observability import logger as obs_logger
 
 def setup_logging():
     """Настройка логирования для PII Proxy"""
@@ -27,7 +28,7 @@ def setup_logging():
     file_handler.setLevel(logging.DEBUG)  # В файл пишем все подробности
     
     # Настраиваем логгер для всего приложения
-    root_logger = logging.getLogger()
+    root_logger = obs_logger.get_logger()
     root_logger.setLevel(logging.DEBUG if debug_mode else logging.INFO)
     root_logger.addHandler(console_handler)
     root_logger.addHandler(file_handler)
@@ -40,13 +41,13 @@ def setup_logging():
         'llm_pii_proxy.providers.azure_provider',
         'llm_pii_proxy.providers.ollama_provider'
     ]:
-        logger = logging.getLogger(logger_name)
+        logger = obs_logger.get_logger(logger_name)
         logger.setLevel(logging.DEBUG if debug_mode else logging.INFO)
     
     # Уменьшаем уровень для внешних библиотек
-    logging.getLogger('httpx').setLevel(logging.WARNING)
-    logging.getLogger('openai').setLevel(logging.WARNING)
-    logging.getLogger('urllib3').setLevel(logging.WARNING)
+    obs_logger.get_logger('httpx').setLevel(obs_logger.logging.WARNING)
+    obs_logger.get_logger('openai').setLevel(obs_logger.logging.WARNING)
+    obs_logger.get_logger('urllib3').setLevel(obs_logger.logging.WARNING)
     
     if debug_mode:
         logging.info("🔍 DEBUG РЕЖИМ ВКЛЮЧЕН - будут показаны чувствительные данные!")
