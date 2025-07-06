@@ -27,7 +27,7 @@ class AzureOpenAIProvider(LLMProvider):
             api_version=self.api_version
         )
         
-        logger.info("☁️ Azure OpenAI Provider инициализирован", extra={
+        logger.debug("☁️ Azure OpenAI Provider инициализирован", extra={
             "endpoint": self.endpoint,
             "deployment": self.deployment_name,
             "api_version": self.api_version
@@ -40,7 +40,7 @@ class AzureOpenAIProvider(LLMProvider):
     async def create_chat_completion(self, request: ChatRequest) -> ChatResponse:
         start_time = time.time()
         
-        logger.info("📤 Отправляем запрос к Azure OpenAI", extra={
+        logger.debug("📤 Отправляем запрос к Azure OpenAI", extra={
             "model": self.deployment_name,
             "messages_count": len(request.messages),
             "session_id": request.session_id
@@ -82,54 +82,54 @@ class AzureOpenAIProvider(LLMProvider):
             logger.debug(f"📤 Отправляем {len(azure_messages)} сообщений в Azure OpenAI")
             
             # 🔍 ПОЛНАЯ ОТЛАДКА ВХОДЯЩИХ СООБЩЕНИЙ
-            logger.info("🔍 ПОЛНЫЙ PAYLOAD ДЛЯ AZURE OPENAI:")
+            logger.debug("🔍 ПОЛНЫЙ PAYLOAD ДЛЯ AZURE OPENAI:")
             import json
-            logger.info(json.dumps(payload, indent=2, ensure_ascii=False))
+            logger.debug(json.dumps(payload, indent=2, ensure_ascii=False))
             
             response = await self.client.chat.completions.create(**payload)
             
             duration = time.time() - start_time
-            logger.info("📨 Получен ответ от Azure OpenAI", extra={
+            logger.debug("📨 Получен ответ от Azure OpenAI", extra={
                 "duration_ms": round(duration * 1000, 2),
                 "choices": len(response.choices)
             })
             
             # 🔍 ПОЛНАЯ ОТЛАДКА ОТВЕТА ОТ AZURE
-            logger.info("🔍 ПОЛНЫЙ RAW ОТВЕТ ОТ AZURE OPENAI:")
-            logger.info(f"   ID: {response.id}")
-            logger.info(f"   Model: {response.model}")
-            logger.info(f"   Object: {response.object}")
-            logger.info(f"   Created: {response.created}")
-            logger.info(f"   Choices count: {len(response.choices)}")
+            logger.debug("🔍 ПОЛНЫЙ RAW ОТВЕТ ОТ AZURE OPENAI:")
+            logger.debug(f"   ID: {response.id}")
+            logger.debug(f"   Model: {response.model}")
+            logger.debug(f"   Object: {response.object}")
+            logger.debug(f"   Created: {response.created}")
+            logger.debug(f"   Choices count: {len(response.choices)}")
             
             for i, choice in enumerate(response.choices):
-                logger.info(f"   Choice {i}:")
-                logger.info(f"     Index: {choice.index}")
-                logger.info(f"     Finish reason: {choice.finish_reason}")
-                logger.info(f"     Message role: {choice.message.role}")
-                logger.info(f"     Message content: {choice.message.content}")
+                logger.debug(f"   Choice {i}:")
+                logger.debug(f"     Index: {choice.index}")
+                logger.debug(f"     Finish reason: {choice.finish_reason}")
+                logger.debug(f"     Message role: {choice.message.role}")
+                logger.debug(f"     Message content: {choice.message.content}")
                 
                 if hasattr(choice.message, 'tool_calls') and choice.message.tool_calls:
-                    logger.info(f"     Tool calls: {len(choice.message.tool_calls)}")
+                    logger.debug(f"     Tool calls: {len(choice.message.tool_calls)}")
                     for j, tc in enumerate(choice.message.tool_calls):
-                        logger.info(f"       Tool call {j}: ID={tc.id}, Type={tc.type}")
-                        logger.info(f"       Function: {tc.function.name}")
-                        logger.info(f"       Arguments: {tc.function.arguments}")
+                        logger.debug(f"       Tool call {j}: ID={tc.id}, Type={tc.type}")
+                        logger.debug(f"       Function: {tc.function.name}")
+                        logger.debug(f"       Arguments: {tc.function.arguments}")
                 else:
-                    logger.info(f"     Tool calls: None")
+                    logger.debug(f"     Tool calls: None")
             
             if response.usage:
-                logger.info(f"   Usage: prompt={response.usage.prompt_tokens}, completion={response.usage.completion_tokens}, total={response.usage.total_tokens}")
+                logger.debug(f"   Usage: prompt={response.usage.prompt_tokens}, completion={response.usage.completion_tokens}, total={response.usage.total_tokens}")
             
             # 🔍 ПОЛНЫЙ JSON DUMP
             import json
             try:
                 response_dict = response.model_dump()
-                logger.info("🔍 AZURE RESPONSE JSON:")
-                logger.info(json.dumps(response_dict, indent=2, ensure_ascii=False))
+                logger.debug("🔍 AZURE RESPONSE JSON:")
+                logger.debug(json.dumps(response_dict, indent=2, ensure_ascii=False))
             except Exception as e:
                 logger.warning(f"Не удалось сериализовать ответ: {e}")
-                logger.info(f"🔍 AZURE RESPONSE STR: {str(response)}")
+                logger.debug(f"🔍 AZURE RESPONSE STR: {str(response)}")
             
             # ПРОЗРАЧНОЕ преобразование ответа
             choices = []
@@ -152,7 +152,7 @@ class AzureOpenAIProvider(LLMProvider):
                         }
                         for tc in choice.message.tool_calls
                     ]
-                    logger.info(f"🔧 Ответ содержит {len(choice.message.tool_calls)} tool_calls")
+                    logger.debug(f"🔧 Ответ содержит {len(choice.message.tool_calls)} tool_calls")
                 
                 choices.append({
                     "index": choice.index,
@@ -172,8 +172,8 @@ class AzureOpenAIProvider(LLMProvider):
             )
             
             # 🔍 ПОЛНАЯ ОТЛАДКА ФИНАЛЬНОГО ОТВЕТА
-            logger.info("🔍 ФИНАЛЬНЫЙ ОТВЕТ ДЛЯ КЛИЕНТА:")
-            logger.info(json.dumps(final_response.model_dump(), indent=2, ensure_ascii=False))
+            logger.debug("🔍 ФИНАЛЬНЫЙ ОТВЕТ ДЛЯ КЛИЕНТА:")
+            logger.debug(json.dumps(final_response.model_dump(), indent=2, ensure_ascii=False))
             
             return final_response
             
@@ -188,7 +188,7 @@ class AzureOpenAIProvider(LLMProvider):
     async def create_chat_completion_stream(self, request: ChatRequest) -> AsyncIterator[ChatResponse]:
         start_time = time.time()
         
-        logger.info("🔄 Начинаем стриминг к Azure OpenAI", extra={
+        logger.debug("🔄 Начинаем стриминг к Azure OpenAI", extra={
             "model": self.deployment_name,
             "messages_count": len(request.messages),
             "session_id": request.session_id
@@ -230,9 +230,9 @@ class AzureOpenAIProvider(LLMProvider):
             logger.debug(f"🔄 STREAMING: Отправляем {len(azure_messages)} сообщений в Azure OpenAI")
             
             # 🔍 ПОЛНАЯ ОТЛАДКА STREAMING PAYLOAD
-            logger.info("🔍 STREAMING PAYLOAD ДЛЯ AZURE OPENAI:")
+            logger.debug("🔍 STREAMING PAYLOAD ДЛЯ AZURE OPENAI:")
             import json
-            logger.info(json.dumps(payload, indent=2, ensure_ascii=False))
+            logger.debug(json.dumps(payload, indent=2, ensure_ascii=False))
             
             chunk_count = 0
             stream = await self.client.chat.completions.create(**payload)
@@ -244,13 +244,13 @@ class AzureOpenAIProvider(LLMProvider):
                     logger.debug(f"⚡ Первый chunk получен за {round(first_chunk_time * 1000, 2)}ms")
                 
                 # 🔍 ОТЛАДКА КАЖДОГО CHUNK
-                logger.info(f"🔍 CHUNK {chunk_count} ОТ AZURE:")
+                logger.debug(f"🔍 CHUNK {chunk_count} ОТ AZURE:")
                 try:
                     chunk_dict = response.model_dump()
-                    logger.info(json.dumps(chunk_dict, indent=2, ensure_ascii=False))
+                    logger.debug(json.dumps(chunk_dict, indent=2, ensure_ascii=False))
                 except Exception as e:
                     logger.warning(f"Не удалось сериализовать chunk: {e}")
-                    logger.info(f"🔍 CHUNK {chunk_count} STR: {str(response)}")
+                    logger.debug(f"🔍 CHUNK {chunk_count} STR: {str(response)}")
                 
                 # Формируем choices для streaming response
                 choices = []
@@ -301,13 +301,13 @@ class AzureOpenAIProvider(LLMProvider):
                 )
                 
                 # 🔍 ОТЛАДКА ФИНАЛЬНОГО CHUNK ДЛЯ КЛИЕНТА
-                logger.info(f"🔍 ФИНАЛЬНЫЙ CHUNK {chunk_count} ДЛЯ КЛИЕНТА:")
-                logger.info(json.dumps(final_chunk.model_dump(), indent=2, ensure_ascii=False))
+                logger.debug(f"🔍 ФИНАЛЬНЫЙ CHUNK {chunk_count} ДЛЯ КЛИЕНТА:")
+                logger.debug(json.dumps(final_chunk.model_dump(), indent=2, ensure_ascii=False))
                 
                 yield final_chunk
             
             total_duration = time.time() - start_time
-            logger.info("✅ Стриминг завершен", extra={
+            logger.debug("✅ Стриминг завершен", extra={
                 "chunks_received": chunk_count,
                 "total_duration_ms": round(total_duration * 1000, 2)
             })
@@ -329,7 +329,7 @@ class AzureOpenAIProvider(LLMProvider):
                 messages=[{"role": "user", "content": "ping"}],
                 max_tokens=1
             )
-            logger.info("💚 Azure OpenAI health check успешен")
+            logger.debug("💚 Azure OpenAI health check успешен")
             return True
             
         except Exception as e:

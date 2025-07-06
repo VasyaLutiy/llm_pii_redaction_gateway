@@ -25,10 +25,10 @@ USE_OLLAMA = os.getenv("USE_OLLAMA", "false").lower() == "true"
 if USE_OLLAMA:
     from llm_pii_proxy.providers.ollama_provider import OllamaProvider
     llm_provider = OllamaProvider()
-    logger.info("🦙 ЭКСПЕРИМЕНТ: Используем Ollama provider (притворяется Azure)")
+    logger.debug("🦙 ЭКСПЕРИМЕНТ: Используем Ollama provider (притворяется Azure)")
 else:
     llm_provider = AzureOpenAIProvider()
-    logger.info("☁️ Используем Azure OpenAI provider")
+    logger.debug("☁️ Используем Azure OpenAI provider")
 
 pii_gateway = AsyncPIISecurityGateway()
 llm_service = LLMService(llm_provider, pii_gateway)
@@ -66,7 +66,7 @@ async def chat_completions(request: ChatRequest, request_body: Request):
     # Получаем заголовки
     headers = dict(request_body.headers)
     
-    logger.info("🌟 Получен новый запрос к chat completions", extra={
+    logger.debug("🌟 Получен новый запрос к chat completions", extra={
         "endpoint": "/v1/chat/completions",
         "session_id": request.session_id,
         "model": request.model,
@@ -81,35 +81,35 @@ async def chat_completions(request: ChatRequest, request_body: Request):
     })
     
     # Логируем raw request для отладки
-    logger.info(f"📥 RAW REQUEST FROM CLIENT: {raw_request}")
-    logger.info(f"📥 REQUEST HEADERS: {headers}")
+    logger.debug(f"📥 RAW REQUEST FROM CLIENT: {raw_request}")
+    logger.debug(f"📥 REQUEST HEADERS: {headers}")
     
     # 🔍 ПОЛНАЯ ОТЛАДКА ВХОДЯЩЕГО ЗАПРОСА
-    logger.info("🔍 ПОЛНЫЙ PARSED REQUEST:")
-    logger.info(json.dumps(request.model_dump(), indent=2, ensure_ascii=False))
+    logger.debug("🔍 ПОЛНЫЙ PARSED REQUEST:")
+    logger.debug(json.dumps(request.model_dump(), indent=2, ensure_ascii=False))
     
     # Если есть tools, логируем их
     if request.tools:
-        logger.info(f"🔧 TOOLS в запросе: {len(request.tools)} tools")
+        logger.debug(f"🔧 TOOLS в запросе: {len(request.tools)} tools")
         for i, tool in enumerate(request.tools):
-            logger.info(f"    Tool {i+1}: {tool.get('function', {}).get('name', 'unknown')}")
+            logger.debug(f"    Tool {i+1}: {tool.get('function', {}).get('name', 'unknown')}")
     
     if request.tool_choice:
-        logger.info(f"🎯 TOOL_CHOICE в запросе: {request.tool_choice}")
+        logger.debug(f"🎯 TOOL_CHOICE в запросе: {request.tool_choice}")
     
     if request.functions:
-        logger.info(f"⚙️ FUNCTIONS в запросе: {len(request.functions)} functions")
+        logger.debug(f"⚙️ FUNCTIONS в запросе: {len(request.functions)} functions")
     
     # Детальное логирование сообщений
-    logger.info("📝 ДЕТАЛЬНЫЕ СООБЩЕНИЯ:")
+    logger.debug("📝 ДЕТАЛЬНЫЕ СООБЩЕНИЯ:")
     for i, msg in enumerate(request.messages):
-        logger.info(f"    Сообщение {i+1}:")
-        logger.info(f"      Role: {msg.role}")
-        logger.info(f"      Content: {msg.content[:200]}{'...' if len(msg.content) > 200 else ''}")
+        logger.debug(f"    Сообщение {i+1}:")
+        logger.debug(f"      Role: {msg.role}")
+        logger.debug(f"      Content: {msg.content[:200]}{'...' if len(msg.content) > 200 else ''}")
         if hasattr(msg, 'tool_calls') and msg.tool_calls:
-            logger.info(f"      Tool calls: {len(msg.tool_calls)}")
+            logger.debug(f"      Tool calls: {len(msg.tool_calls)}")
         if hasattr(msg, 'tool_call_id') and msg.tool_call_id:
-            logger.info(f"      Tool call ID: {msg.tool_call_id}")
+            logger.debug(f"      Tool call ID: {msg.tool_call_id}")
     
     try:
         # Валидация входных данных
@@ -158,7 +158,7 @@ async def chat_completions(request: ChatRequest, request_body: Request):
         response = await llm_service.process_chat_request(request)
         
         duration = time.time() - start_time
-        logger.info("✨ Запрос успешно обработан", extra={
+        logger.debug("✨ Запрос успешно обработан", extra={
             "session_id": request.session_id,
             "total_duration_ms": round(duration * 1000, 2),
             "response_choices": len(response.choices),
@@ -166,7 +166,7 @@ async def chat_completions(request: ChatRequest, request_body: Request):
         })
         
         # Логируем финальный ответ
-        logger.info("📤 RESPONSE TO CLIENT: %s", response.json())
+        logger.debug("📤 RESPONSE TO CLIENT: %s", response.json())
         print("📤 RESPONSE TO CLIENT:", response.json())
         
         return response

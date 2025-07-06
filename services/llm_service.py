@@ -229,10 +229,11 @@ class LLMService:
                     # Аккумулируем контент для демаскирования
                     if chunk.choices and len(chunk.choices) > 0:
                         choice = chunk.choices[0]
-                        if choice.delta.get("content"):
-                            accumulated_content += choice.delta["content"]
-                        if choice.delta.get("tool_calls"):
-                            accumulated_tool_calls.extend(choice.delta["tool_calls"])
+                        delta = choice.get("delta", {})
+                        if delta.get("content"):
+                            accumulated_content += delta["content"]
+                        if delta.get("tool_calls"):
+                            accumulated_tool_calls.extend(delta["tool_calls"])
                     
                     # Отдаем chunk как есть (пока замаскированный)
                     yield chunk
