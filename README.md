@@ -292,6 +292,37 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Optimization: В chat_completions теперь всегда передаются только последние 20 сообщений истории. Если сообщений больше — история обрезается, и это событие логируется. Это снижает нагрузку на LLM, ускоряет ответы и предотвращает переполнение контекста.
 - feat: skip PII masking for mermaid blocks in llm_service — теперь сообщения, содержащие mermaid-блоки, не проходят через маскирование PII, что ускоряет обработку и предотвращает искажение диаграмм.
 
+## Изменения в логгировании (апрель 2024)
+
+В рамках рефакторинга логгирования весь проект переведён на централизованный логгер, реализованный в модуле `llm_pii_proxy.observability.logger`.
+
+### Что изменено
+- Все основные модули теперь используют импорт:
+  ```python
+  from llm_pii_proxy.observability import logger as obs_logger
+  logger = obs_logger.get_logger(__name__)
+  ```
+- Прямые вызовы `logging.getLogger(...)` заменены на централизованный подход.
+- Это обеспечивает единообразие, централизованную настройку и удобство управления логами.
+
+### Затронутые файлы
+- `llm_pii_proxy/main.py`
+- `llm_pii_proxy/services/llm_service.py`
+- `llm_pii_proxy/security/pii_gateway.py`
+- `llm_pii_proxy/api/routes/chat.py`
+- `llm_pii_proxy/providers/azure_provider.py`
+- `llm_pii_proxy/providers/ollama_provider.py`
+
+### Как использовать логгер
+Для новых модулей используйте следующий шаблон:
+```python
+from llm_pii_proxy.observability import logger as obs_logger
+logger = obs_logger.get_logger(__name__)
+```
+
+### Примечание
+В самом модуле `llm_pii_proxy/observability/logger.py` допускается использование стандартного logging для реализации централизованного логгера.
+
 ---
 
 **Built with ❤️ for secure AI applications** 
