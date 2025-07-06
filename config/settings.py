@@ -23,7 +23,9 @@ class Settings:
         
         # PII Protection settings
         self.pii_protection_enabled = os.getenv("PII_PROTECTION_ENABLED", "false").lower() == "true"
-        self.pii_patterns_config_path = os.getenv("PII_PATTERNS_CONFIG_PATH", "llm_pii_proxy/config/pii_patterns.yaml")
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+        default_pii_patterns_path = os.path.join(base_dir, 'llm_pii_proxy', 'config', 'pii_patterns.yaml')
+        self.pii_patterns_config_path = os.getenv("PII_PATTERNS_CONFIG_PATH", default_pii_patterns_path)
         
         # API settings
         self.api_host = os.getenv("API_HOST", "0.0.0.0")
@@ -37,8 +39,9 @@ class Settings:
         self.validate_settings()
     
     def _load_env_file(self):
-        """Загружаем переменные из azure.env файла"""
-        env_file = "azure.env"
+        """Загружаем переменные из azure.env файла (относительно корня проекта)"""
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+        env_file = os.path.join(base_dir, 'azure.env')
         if os.path.exists(env_file):
             with open(env_file, 'r', encoding='utf-8') as f:
                 for line in f:

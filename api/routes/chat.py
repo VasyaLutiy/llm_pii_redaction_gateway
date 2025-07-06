@@ -38,8 +38,8 @@ def validate_chat_request(request: ChatRequest) -> None:
     if not request.messages:
         raise ValidationError("Messages cannot be empty")
     
-    if len(request.messages) > 100:  # Разумный лимит
-        raise ValidationError("Too many messages (max 100)")
+    if len(request.messages) > 1000:  # Разумный лимит
+        raise ValidationError("Too many messages (max 1000)")
     
     for i, message in enumerate(request.messages):
         # Разрешаем пустые сообщения для tool calls и assistant сообщений
@@ -110,6 +110,9 @@ async def chat_completions(request: ChatRequest, request_body: Request):
             logger.debug(f"      Tool calls: {len(msg.tool_calls)}")
         if hasattr(msg, 'tool_call_id') and msg.tool_call_id:
             logger.debug(f"      Tool call ID: {msg.tool_call_id}")
+    
+    # Логируем только количество сообщений для мониторинга Cursor
+    logger.info(f"[Cursor] Количество сообщений в запросе: {len(request.messages)}")
     
     try:
         # Валидация входных данных
