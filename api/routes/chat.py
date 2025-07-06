@@ -33,6 +33,8 @@ else:
 pii_gateway = AsyncPIISecurityGateway()
 llm_service = LLMService(llm_provider, pii_gateway)
 
+MAX_MESSAGES = 20  # Лимит сообщений для LLM
+
 def validate_chat_request(request: ChatRequest) -> None:
     """Валидация входящего запроса"""
     if not request.messages:
@@ -58,6 +60,12 @@ def validate_chat_request(request: ChatRequest) -> None:
 @router.post("/v1/chat/completions", response_model=ChatResponse)
 async def chat_completions(request: ChatRequest, request_body: Request):
     start_time = time.time()
+    
+    # Обрезаем историю сообщений до MAX_MESSAGES
+    original_count = len(request.messages)
+    if original_count > MAX_MESSAGES:
+        request.messages = request.messages[-MAX_MESSAGES:]
+        logger.info(f"[Cursor] История сообщений обрезана с {original_count} до {MAX_MESSAGES}")
     
     # Получаем raw body для детального логирования
     body = await request_body.body()
