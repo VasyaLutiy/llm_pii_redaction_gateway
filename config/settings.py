@@ -23,7 +23,9 @@ class Settings:
         
         # PII Protection settings
         self.pii_protection_enabled = os.getenv("PII_PROTECTION_ENABLED", "false").lower() == "true"
-        self.pii_patterns_config_path = os.getenv("PII_PATTERNS_CONFIG_PATH", "llm_pii_proxy/config/pii_patterns.yaml")
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+        default_pii_patterns_path = os.path.join(base_dir, 'llm_pii_proxy', 'config', 'pii_patterns.yaml')
+        self.pii_patterns_config_path = os.getenv("PII_PATTERNS_CONFIG_PATH", default_pii_patterns_path)
         
         # API settings
         self.api_host = os.getenv("API_HOST", "0.0.0.0")
@@ -33,12 +35,22 @@ class Settings:
         self.enable_auth = os.getenv("ENABLE_AUTH", "false").lower() == "true"
         self.api_key = os.getenv("API_KEY")
         
+        # OpenRouter settings
+        self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+        self.openrouter_model = os.getenv("OPENROUTER_MODEL")
+        self.openrouter_base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+
+        # Выбор провайдера (для валидации)
+        self.use_openrouter = os.getenv("USE_OPENROUTER", "false").lower() == "true"
+        self.use_ollama = os.getenv("USE_OLLAMA", "false").lower() == "true"
+        
         # Валидация критических настроек
         self.validate_settings()
     
     def _load_env_file(self):
-        """Загружаем переменные из azure.env файла"""
-        env_file = "azure.env"
+        """Загружаем переменные из azure.env файла (относительно корня проекта)"""
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+        env_file = os.path.join(base_dir, 'azure.env')
         if os.path.exists(env_file):
             with open(env_file, 'r', encoding='utf-8') as f:
                 for line in f:
@@ -51,11 +63,19 @@ class Settings:
 
     def validate_settings(self) -> None:
         """Validate critical settings"""
-        required_vars = [
-            ("AZURE_OPENAI_API_KEY", self.azure_openai_api_key),
-            ("AZURE_OPENAI_ENDPOINT", self.azure_openai_endpoint),
-            ("AZURE_COMPLETIONS_MODEL", self.azure_completions_model)
-        ]
+        required_vars = []
+        
+        if not self.use_openrouter and not self.use_ollama:
+            # Требуем Azure переменные только если используем Azure напрямую
+            required_vars.extend([
+                ("AZURE_OPENAI_API_KEY", self.azure_openai_api_key),
+                ("AZURE_OPENAI_ENDPOINT", self.azure_openai_endpoint),
+                ("AZURE_COMPLETIONS_MODEL", self.azure_completions_model)
+            ])
+        else:
+            # Для OpenRouter требуем только ключ
+            if self.use_openrouter:
+                required_vars.append(("OPENROUTER_API_KEY", self.openrouter_api_key))
         
         missing_vars = [var_name for var_name, var_value in required_vars if not var_value]
         if missing_vars:

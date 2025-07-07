@@ -12,9 +12,10 @@ from llm_pii_proxy.core.interfaces import PIISecurityGateway
 from llm_pii_proxy.core.exceptions import PIISessionNotFoundError, PIIProcessingError
 from .pii_redaction import PIIRedactionGateway, RedactionMapping
 import asyncio
+from llm_pii_proxy.observability import logger as obs_logger
 
 # Настраиваем логгер
-logger = logging.getLogger(__name__)
+logger = obs_logger.get_logger(__name__)
 
 class AsyncPIISecurityGateway(PIISecurityGateway):
     def __init__(self, session_timeout_minutes: int = 60):

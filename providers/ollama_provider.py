@@ -1,6 +1,5 @@
 # providers/ollama_provider.py
 
-import logging
 import time
 import uuid
 from typing import AsyncIterator
@@ -8,8 +7,9 @@ import httpx
 from llm_pii_proxy.core.models import ChatRequest, ChatResponse
 from llm_pii_proxy.core.exceptions import LLMProviderError
 from llm_pii_proxy.core.interfaces import LLMProvider
+from llm_pii_proxy.observability import logger as obs_logger
 
-logger = logging.getLogger(__name__)
+logger = obs_logger.get_logger(__name__)
 
 class OllamaProvider(LLMProvider):
     """
