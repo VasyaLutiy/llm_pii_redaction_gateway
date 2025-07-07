@@ -15,6 +15,13 @@ def setup_logging(debug_mode: Optional[bool] = None, log_file_path: Optional[str
     if log_file_path is None:
         log_file_path = '/tmp/llm_pii_proxy_debug.log'
 
+    # Новый блок: поддержка переменной окружения PII_PROXY_LOG_LEVEL
+    log_level_env = os.getenv('PII_PROXY_LOG_LEVEL')
+    if log_level_env:
+        log_level = getattr(logging, log_level_env.upper(), logging.INFO)
+    else:
+        log_level = logging.DEBUG if debug_mode else logging.INFO
+
     formatter = logging.Formatter(
         '%(asctime)s | %(levelname)8s | %(name)s | %(message)s',
         datefmt='%H:%M:%S'
@@ -26,7 +33,7 @@ def setup_logging(debug_mode: Optional[bool] = None, log_file_path: Optional[str
     file_handler.setLevel(logging.DEBUG)
 
     root_logger = logging.getLogger()
-    root_logger.setLevel(logging.DEBUG if debug_mode else logging.INFO)
+    root_logger.setLevel(log_level)
     # Удаляем старые хендлеры, чтобы избежать дублирования
     root_logger.handlers = []
     root_logger.addHandler(console_handler)

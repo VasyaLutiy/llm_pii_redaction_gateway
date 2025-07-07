@@ -67,7 +67,7 @@ class AzureOpenAIProvider(LLMProvider):
                 "model": self.deployment_name,
                 "messages": azure_messages,
                 "temperature": request.temperature,
-                "max_tokens": request.max_tokens,
+                "max_completion_tokens": request.max_completion_tokens,
                 "stream": False
             }
             
@@ -120,6 +120,7 @@ class AzureOpenAIProvider(LLMProvider):
             
             if response.usage:
                 logger.debug(f"   Usage: prompt={response.usage.prompt_tokens}, completion={response.usage.completion_tokens}, total={response.usage.total_tokens}")
+                logger.warning(f"🪙 Расход токенов (Azure): prompt={response.usage.prompt_tokens}, completion={response.usage.completion_tokens}, total={response.usage.total_tokens}")
             
             # 🔍 ПОЛНЫЙ JSON DUMP
             import json
@@ -214,8 +215,8 @@ class AzureOpenAIProvider(LLMProvider):
             payload = {
                 "model": self.deployment_name,
                 "messages": azure_messages,
-                "temperature": request.temperature,
-                "max_tokens": request.max_tokens,
+                #"temperature": request.temperature,
+                "max_completion_tokens": request.max_completion_tokens,
                 "stream": True
             }
             
@@ -327,11 +328,19 @@ class AzureOpenAIProvider(LLMProvider):
             response = await self.client.chat.completions.create(
                 model=self.deployment_name,
                 messages=[{"role": "user", "content": "ping"}],
-                max_tokens=1
+                max_completion_tokens=1
             )
             logger.debug("💚 Azure OpenAI health check успешен")
             return True
             
         except Exception as e:
             logger.warning(f"🔴 Azure OpenAI health check неуспешен: {str(e)}")
-            return False 
+            return False
+
+# -----------------------------------------------------------------------------
+# Optional: dynamically replace Azure provider with OpenRouterProvider
+# This enables using OpenRouter without touching chat.py or llm_service.py.
+# -----------------------------------------------------------------------------
+import os as _os
+if _os.getenv("USE_OPENROUTER", "false").lower() == "true":
+    from .openrouter_provider import OpenRouterProvider as AzureOpenAIProvider  # type: ignore 
